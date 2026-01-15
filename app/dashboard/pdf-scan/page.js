@@ -4,13 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { FileUp, Loader2, CheckCircle, AlertCircle, Play } from 'lucide-react';
-// import { supabase } from '@/lib/supabase';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+import { supabase } from '@/lib/supabase';
 import FileUploader from '@/app/components/FileUploader';
 import styles from './pdf-scan.module.css';
 
