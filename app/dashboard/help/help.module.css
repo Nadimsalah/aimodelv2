@@ -1,0 +1,254 @@
+.container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    margin-bottom: 2rem;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ededed;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.subtitle {
+    color: #a1a1aa;
+    font-size: 1rem;
+}
+
+.section {
+    margin-bottom: 3rem;
+}
+
+.sectionTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ededed;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Flow Diagram */
+.flowCard {
+    background: rgba(23, 23, 23, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    overflow-x: auto;
+}
+
+.flowDiagram {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: max-content;
+}
+
+.flowStep {
+    background: rgba(99, 102, 241, 0.1);
+    border: 2px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    min-width: 150px;
+}
+
+.stepNumber {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin: 0 auto 0.75rem;
+}
+
+.flowStep h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ededed;
+    margin-bottom: 0.5rem;
+}
+
+.flowStep p {
+    font-size: 0.875rem;
+    color: #a1a1aa;
+}
+
+.flowArrow {
+    color: #6366f1;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Code Cards */
+.codeCard {
+    background: rgba(23, 23, 23, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+}
+
+.explanation {
+    color: #ededed;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.explanation strong {
+    color: #6366f1;
+}
+
+.codeBlock {
+    background: #0a0a0a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: #10b981;
+    margin-bottom: 1rem;
+}
+
+.techDetails {
+    background: rgba(99, 102, 241, 0.05);
+    border-left: 3px solid #6366f1;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    color: #a1a1aa;
+    font-size: 0.875rem;
+    line-height: 1.8;
+}
+
+.exampleBox {
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+
+.exampleBox h4 {
+    color: #10b981;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.exampleBox p {
+    color: #ededed;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.exampleBox p:last-child {
+    margin-bottom: 0;
+}
+
+/* FAQ */
+.faqList {
+    background: rgba(23, 23, 23, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.faqItem {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.faqItem:last-child {
+    border-bottom: none;
+}
+
+.faqQuestion {
+    width: 100%;
+    padding: 1.25rem 1.5rem;
+    background: none;
+    border: none;
+    color: #ededed;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s ease;
+}
+
+.faqQuestion:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.faqAnswer {
+    padding: 0 1.5rem 1.25rem;
+    color: #a1a1aa;
+    line-height: 1.6;
+}
+
+/* Contact */
+.contactCard {
+    background: rgba(23, 23, 23, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+}
+
+.contactCard h3 {
+    color: #ededed;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.contactCard p {
+    color: #a1a1aa;
+    margin-bottom: 0.5rem;
+}
+
+.contactCard p:last-child {
+    margin-bottom: 0;
+}
+
+.contactCard strong {
+    color: #ededed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1.5rem;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .flowDiagram {
+        flex-direction: column;
+    }
+
+    .flowArrow {
+        transform: rotate(90deg);
+    }
+
+    .codeBlock {
+        font-size: 0.75rem;
+        padding: 1rem;
+    }
+}

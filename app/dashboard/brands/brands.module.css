@@ -1,6 +1,6 @@
 .container {
     padding: 2rem;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -14,6 +14,7 @@
     margin-bottom: 0.5rem;
     background: linear-gradient(135deg, #fff 0%, #a5a5a5 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -21,61 +22,66 @@
     color: #888;
 }
 
-.uploadSection {
+/* Options Grid */
+.optionsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
     margin-bottom: 2rem;
 }
 
-.uploadCard {
+.optionCard {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
+    text-align: center;
+    transition: all 0.2s ease;
 }
 
-.iconWrapper {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 1rem;
-    border-radius: 50%;
-    color: #fff;
+.optionCard:hover {
+    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(255, 255, 255, 0.08);
 }
 
-.uploadCard h3 {
-    margin: 0 0 0.25rem 0;
+.optionIcon {
+    color: #6366f1;
+    margin-bottom: 1rem;
+}
+
+.optionCard h3 {
+    margin: 0 0 0.5rem 0;
     font-size: 1.1rem;
+    color: #ededed;
 }
 
-.uploadCard p {
-    margin: 0;
+.optionCard p {
+    margin: 0 0 1rem 0;
     color: #888;
     font-size: 0.9rem;
 }
 
-.actions {
-    margin-left: auto;
-}
-
-.uploadBtn {
-    background: #fff;
-    color: #000;
+.optionBtn {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
+    border: none;
 }
 
-.uploadBtn:hover {
-    opacity: 0.9;
+.optionBtn:hover {
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+    transform: translateY(-1px);
 }
 
 .status {
-    margin-top: 1rem;
+    margin-bottom: 1.5rem;
     padding: 1rem;
     border-radius: 8px;
     font-size: 0.9rem;
@@ -93,20 +99,28 @@
     border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
-.tableCard {
+/* Brands Grid */
+.brandsCard {
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     overflow: hidden;
     backdrop-filter: blur(10px);
+    padding: 1.5rem;
 }
 
-.tableHeader {
-    padding: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.brandsHeader {
+    margin-bottom: 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.brandsHeader h2 {
+    margin: 0;
+    font-size: 1.5rem;
 }
 
 .searchBox {
@@ -125,47 +139,217 @@
     color: #fff;
     outline: none;
     font-size: 0.9rem;
+    min-width: 200px;
 }
 
-.tableWrapper {
-    overflow-x: auto;
+.brandsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
 }
 
-.table {
-    width: 100%;
-    border-collapse: collapse;
+.brandBox {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 100px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
-.table th {
-    text-align: left;
-    padding: 1rem 1.5rem;
-    color: #888;
-    font-weight: 500;
-    font-size: 0.85rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+.brandBox:hover {
+    border-color: rgba(99, 102, 241, 0.6);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
 }
 
-.table td {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    font-size: 0.95rem;
+.brandBox:hover .deleteBtn {
+    opacity: 1;
 }
 
-.mono {
-    font-family: monospace;
-    color: #aaa;
+.brandName {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #ededed;
+    word-break: break-word;
 }
 
-.date {
-    color: #666;
-    font-size: 0.85rem;
+.deleteBtn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    padding: 0.4rem;
+    color: #ef4444;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.loadingCell,
-.emptyCell {
+.deleteBtn:hover {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+.deleteBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.emptyState {
     text-align: center;
     padding: 3rem;
     color: #666;
+    font-style: italic;
+}
+
+/* Modals */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal {
+    background: #171717;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow: auto;
+}
+
+.modalHeader {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modalHeader h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #ededed;
+}
+
+.modalHeader button {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.modalHeader button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ededed;
+}
+
+.modalBody {
+    padding: 1.5rem;
+}
+
+.modalBody label {
+    display: block;
+    color: #ededed;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.modalBody input,
+.modalBody textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #ededed;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    outline: none;
+    font-family: inherit;
+}
+
+.modalBody input:focus,
+.modalBody textarea:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.modalBody textarea {
+    resize: vertical;
+    min-height: 150px;
+}
+
+.hint {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.modalFooter {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.cancelBtn {
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #ededed;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancelBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.addBtn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.addBtn:hover {
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
 }
 
 .spin {
@@ -179,5 +363,44 @@
 
     to {
         transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1.5rem;
+    }
+
+    .optionsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .brandsGrid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .brandBox {
+        padding: 1rem 0.75rem;
+        min-height: 80px;
+    }
+
+    .brandName {
+        font-size: 0.9rem;
+    }
+
+    .deleteBtn {
+        opacity: 1;
+    }
+
+    .modalFooter {
+        flex-direction: column;
+    }
+
+    .cancelBtn,
+    .addBtn {
+        width: 100%;
+        justify-content: center;
     }
 }
