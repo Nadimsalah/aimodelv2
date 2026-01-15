@@ -6,6 +6,9 @@ import { ArrowLeft, Check, AlertTriangle, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import styles from './matches.module.css';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export default function MatchesPage({ params }) {
     // React 19 uses `use(params)` for async params
     const resolvedParams = use(params);
