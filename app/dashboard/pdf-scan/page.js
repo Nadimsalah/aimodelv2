@@ -64,9 +64,18 @@ export default function PdfScanPage() {
             setJobs(prev => [{ id: tempId, filename: file.name, status: 'uploading', created_at: new Date().toISOString() }, ...prev]);
 
             const res = await fetch('/api/scans/create', { method: 'POST', body: formData });
+
+            // Check if response is JSON
+            const contentType = res.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await res.text();
+                console.error('Non-JSON response:', text);
+                throw new Error('Server returned invalid response. Please check console.');
+            }
+
             const data = await res.json();
 
-            if (!res.ok) throw new Error(data.error);
+            if (!res.ok) throw new Error(data.error || 'Upload failed');
 
             const jobId = data.job.id;
 
@@ -78,15 +87,17 @@ export default function PdfScanPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ jobId })
-            });
+            }).catch(err => console.error('Run API error:', err));
 
             // Allow polling to pick up the new real job state
             setFile(null); // Clear input
             await fetchJobs();
 
         } catch (error) {
-            console.error(error);
+            console.error('Scan error:', error);
             alert('Scan failed: ' + error.message);
+            // Remove optimistic update on error
+            setJobs(prev => prev.filter(j => !j.id.startsWith('temp_')));
         }
     };
 
