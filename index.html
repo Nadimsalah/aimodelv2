@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brand Extractor - File Upload</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Brand Extractor</h1>
+            <p>Upload a file and extract brand names automatically</p>
+        </div>
+
+        <div class="steps-container">
+            <!-- Step 1: File Upload -->
+            <div class="step" id="step1">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <h2>Upload File & Extract Text</h2>
+                </div>
+                <div class="step-content">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📄</div>
+                        <p class="upload-text">Drag & drop your file here or click to browse</p>
+                        <p class="upload-hint">Supports: PDF, Excel (.xls, .xlsx), Word (.doc, .docx), Text (.txt)</p>
+                        <input type="file" id="fileInput" hidden>
+                    </div>
+                    <div class="file-info" id="fileInfo" style="display: none;">
+                        <div class="file-details">
+                            <span class="file-name" id="fileName"></span>
+                            <span class="file-size" id="fileSize"></span>
+                        </div>
+                        <button class="btn btn-primary" id="extractBtn">Extract Text</button>
+                        <div class="status-message" id="statusMessage" style="display: none;"></div>
+                    </div>
+                    <div class="progress-bar" id="progressBar" style="display: none;">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="extracted-text-container" id="extractedTextContainer" style="display: none;">
+                        <h3>Extracted Text:</h3>
+                        <div class="extracted-text" id="extractedText"></div>
+                        <button class="btn btn-secondary" id="proceedBtn">Proceed to Brand Extraction</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Brand Extraction -->
+            <div class="step" id="step2" style="display: none;">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <h2>Extract Brand Names</h2>
+                </div>
+                <div class="step-content">
+                    <div class="brand-stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Brands Found</div>
+                            <div class="stat-value" id="brandCount">0</div>
+                        </div>
+                    </div>
+                    <div class="brands-container" id="brandsContainer">
+                        <div class="brands-list" id="brandsList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
