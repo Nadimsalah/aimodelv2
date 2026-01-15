@@ -8,6 +8,9 @@ import { supabase } from '@/lib/supabase';
 import FileUploader from '@/app/components/FileUploader';
 import styles from './pdf-scan.module.css';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export default function PdfScanPage() {
     const router = useRouter();
     const [file, setFile] = useState(null);

@@ -6,6 +6,9 @@ import { Upload, FileSpreadsheet, Trash2, Search, RefreshCw } from 'lucide-react
 import { supabase } from '@/lib/supabase';
 import styles from './brands.module.css';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export default function BrandsPage() {
     const [brands, setBrands] = useState([]);
     const [loading, setLoading] = useState(true);
