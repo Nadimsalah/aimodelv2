@@ -47,7 +47,7 @@ export class BrandExtractorService {
             model: "models/gemini-2.5-flash",
             generationConfig: {
                 responseMimeType: "application/json",
-                responseSchema: extractionSchema,
+                responseSchema: extractionSchema as any,
             }
         });
     }
