@@ -128,7 +128,17 @@ export default function HistoryPage() {
                 body: formData
             });
 
-            const createData = await createRes.json();
+            const responseText = await createRes.text();
+            // console.log('Create API Response:', responseText.substring(0, 200));
+
+            let createData;
+            try {
+                createData = JSON.parse(responseText);
+            } catch (e) {
+                console.error('JSON Parse Error:', e);
+                console.error('Raw Response:', responseText);
+                throw new Error(`Server returned non-JSON response: ${responseText.substring(0, 100)}...`);
+            }
 
             if (!createRes.ok) {
                 throw new Error(createData.error || 'Upload failed');
