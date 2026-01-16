@@ -24,3 +24,7 @@
 - [x] Verify all data displays correctly
 - [x] Check responsive design
 - [x] Verify build success
+
+## Deployment Fixes
+- [x] Replace `pdfinfo` with `pdf-lib` (Fix Progress Bar)
+- [x] Refactor to Client-Side Upload (Fix Payload Too Large)
