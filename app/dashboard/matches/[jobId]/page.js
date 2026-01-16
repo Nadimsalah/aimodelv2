@@ -1,34 +1,64 @@
-
 'use client';
 import { useState, useEffect, use } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Check, AlertTriangle, Search } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, AlertTriangle, TrendingUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import BrandCard from '@/app/components/BrandCard';
 import styles from './matches.module.css';
 
-// Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
 export default function MatchesPage({ params }) {
-    // React 19 uses `use(params)` for async params
     const resolvedParams = use(params);
     const jobId = resolvedParams.jobId;
 
     const router = useRouter();
     const [matches, setMatches] = useState([]);
+    const [pdfBrands, setPdfBrands] = useState({});
+    const [libraryBrands, setLibraryBrands] = useState({});
     const [loading, setLoading] = useState(true);
     const [running, setRunning] = useState(false);
 
-    const [filter, setFilter] = useState('all'); // all, exact, fuzzy
+    const [filter, setFilter] = useState('all');
     const [minScore, setMinScore] = useState(0);
 
-    const fetchMatches = async () => {
+    const fetchData = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/matches/run?jobId=${jobId}`);
-            const data = await res.json();
-            if (data.matches) {
-                setMatches(data.matches);
+            // Fetch matches
+            const matchRes = await fetch(`/api/matches/run?jobId=${jobId}`);
+            const matchData = await matchRes.json();
+
+            if (matchData.matches) {
+                setMatches(matchData.matches);
+
+                // Fetch detailed PDF brands
+                const { data: pdfData } = await supabase
+                    .from('pdf_brands')
+                    .select('*')
+                    .eq('job_id', jobId);
+
+                if (pdfData) {
+                    const pdfMap = {};
+                    pdfData.forEach(brand => {
+                        pdfMap[brand.normalized_name] = brand;
+                    });
+                    setPdfBrands(pdfMap);
+                }
+
+                // Fetch detailed library brands
+                const { data: libData } = await supabase
+                    .from('brands')
+                    .select('*');
+
+                if (libData) {
+                    const libMap = {};
+                    libData.forEach(brand => {
+                        libMap[brand.normalized_name] = brand;
+                    });
+                    setLibraryBrands(libMap);
+                }
             }
         } catch (e) {
             console.error(e);
@@ -45,7 +75,7 @@ export default function MatchesPage({ params }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ jobId, threshold: 0.6 })
             });
-            await fetchMatches();
+            await fetchData();
         } catch (e) {
             alert('Matching failed');
         } finally {
@@ -54,8 +84,7 @@ export default function MatchesPage({ params }) {
     };
 
     useEffect(() => {
-        // Run matching on load if empty, or just fetch
-        fetchMatches();
+        fetchData();
     }, [jobId]);
 
     const filtered = matches.filter(m => {
@@ -71,7 +100,10 @@ export default function MatchesPage({ params }) {
                     <ArrowLeft size={16} /> Back
                 </button>
                 <div className={styles.titleRow}>
-                    <h1 className={styles.title}>Scan Results</h1>
+                    <div>
+                        <h1 className={styles.title}>Scan Results & Matches</h1>
+                        <p className={styles.subtitle}>Comparison between detected and library brands</p>
+                    </div>
                     <button
                         onClick={runMatching}
                         disabled={running}
@@ -84,12 +116,25 @@ export default function MatchesPage({ params }) {
 
             <div className={styles.statsRow}>
                 <div className={styles.statCard}>
-                    <span className={styles.statLabel}>Total Matches</span>
-                    <span className={styles.statValue}>{matches.length}</span>
+                    <TrendingUp size={20} />
+                    <div>
+                        <span className={styles.statLabel}>Total Matches</span>
+                        <span className={styles.statValue}>{matches.length}</span>
+                    </div>
                 </div>
                 <div className={styles.statCard}>
-                    <span className={styles.statLabel}>Exact Matches</span>
-                    <span className={styles.statValue}>{matches.filter(m => m.match_type === 'exact').length}</span>
+                    <Check size={20} />
+                    <div>
+                        <span className={styles.statLabel}>Exact Matches</span>
+                        <span className={styles.statValue}>{matches.filter(m => m.match_type === 'exact').length}</span>
+                    </div>
+                </div>
+                <div className={styles.statCard}>
+                    <AlertTriangle size={20} />
+                    <div>
+                        <span className={styles.statLabel}>Fuzzy Matches</span>
+                        <span className={styles.statValue}>{matches.filter(m => m.match_type === 'fuzzy').length}</span>
+                    </div>
                 </div>
             </div>
 
@@ -99,19 +144,19 @@ export default function MatchesPage({ params }) {
                         className={`${styles.filterBtn} ${filter === 'all' ? styles.active : ''}`}
                         onClick={() => setFilter('all')}
                     >
-                        All
+                        All ({matches.length})
                     </button>
                     <button
                         className={`${styles.filterBtn} ${filter === 'exact' ? styles.active : ''}`}
                         onClick={() => setFilter('exact')}
                     >
-                        Exact
+                        Exact ({matches.filter(m => m.match_type === 'exact').length})
                     </button>
                     <button
                         className={`${styles.filterBtn} ${filter === 'fuzzy' ? styles.active : ''}`}
                         onClick={() => setFilter('fuzzy')}
                     >
-                        Fuzzy
+                        Fuzzy ({matches.filter(m => m.match_type === 'fuzzy').length})
                     </button>
                 </div>
                 <div className={styles.sliderGroup}>
@@ -121,53 +166,83 @@ export default function MatchesPage({ params }) {
                         min="0" max="100"
                         value={minScore}
                         onChange={(e) => setMinScore(Number(e.target.value))}
+                        className={styles.slider}
                     />
                 </div>
             </div>
 
-            <div className={styles.tableCard}>
-                <table className={styles.table}>
-                    <thead>
-                        <tr>
-                            <th>PDF Detected Brand</th>
-                            <th>My Brand Match</th>
-                            <th>Similarity</th>
-                            <th>Type</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr><td colSpan="4" className={styles.loading}>Loading results...</td></tr>
-                        ) : filtered.length === 0 ? (
-                            <tr><td colSpan="4" className={styles.empty}>No matches found matching criteria.</td></tr>
-                        ) : (
-                            filtered.map(m => (
-                                <tr key={m.id}>
-                                    <td className={styles.detected}>{m.detected_brand}</td>
-                                    <td className={styles.myBrand}>{m.my_brand}</td>
-                                    <td>
-                                        <div className={styles.scoreRow}>
-                                            <div className={styles.progressTrack}>
-                                                <div
-                                                    className={styles.progressBar}
-                                                    style={{ width: `${m.similarity}%`, background: m.similarity === 100 ? '#4ade80' : '#facc15' }}
-                                                />
-                                            </div>
-                                            <span className={styles.scoreVal}>{m.similarity}%</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {m.match_type === 'exact' ? (
-                                            <span className={styles.exactTag}><Check size={12} /> Exact</span>
+            <div className={styles.matchesGrid}>
+                {loading ? (
+                    <div className={styles.loading}>Loading matches...</div>
+                ) : filtered.length === 0 ? (
+                    <div className={styles.empty}>No matches found matching criteria.</div>
+                ) : (
+                    filtered.map((match, index) => {
+                        const pdfBrand = pdfBrands[match.detected_brand?.toLowerCase()?.trim()] || { name: match.detected_brand };
+                        const libBrand = libraryBrands[match.my_brand?.toLowerCase()?.trim()] || { name: match.my_brand };
+
+                        return (
+                            <motion.div
+                                key={match.id}
+                                className={styles.matchCard}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.05 }}
+                            >
+                                <div className={styles.matchHeader}>
+                                    <span className={match.match_type === 'exact' ? styles.exactBadge : styles.fuzzyBadge}>
+                                        {match.match_type === 'exact' ? (
+                                            <><Check size={14} /> Exact Match</>
                                         ) : (
-                                            <span className={styles.fuzzyTag}><AlertTriangle size={12} /> Fuzzy</span>
+                                            <><AlertTriangle size={14} /> Fuzzy Match</>
                                         )}
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                                    </span>
+                                    <span className={styles.similarity}>{match.similarity}% Match</span>
+                                </div>
+
+                                <div className={styles.comparison}>
+                                    <div className={styles.brandSection}>
+                                        <h4 className={styles.sectionTitle}>Detected in PDF</h4>
+                                        <BrandCard brand={pdfBrand} showAllDetails={true} />
+                                    </div>
+
+                                    <div className={styles.matchIndicator}>
+                                        <div className={styles.arrowContainer}>
+                                            <ArrowRight size={24} className={styles.arrow} />
+                                        </div>
+                                        <div className={styles.scoreCircle}>
+                                            <svg className={styles.progressRing} width="80" height="80">
+                                                <circle
+                                                    className={styles.progressRingBg}
+                                                    cx="40"
+                                                    cy="40"
+                                                    r="32"
+                                                />
+                                                <circle
+                                                    className={styles.progressRingFill}
+                                                    cx="40"
+                                                    cy="40"
+                                                    r="32"
+                                                    style={{
+                                                        strokeDasharray: `${2 * Math.PI * 32}`,
+                                                        strokeDashoffset: `${2 * Math.PI * 32 * (1 - match.similarity / 100)}`,
+                                                        stroke: match.similarity === 100 ? '#4ade80' : match.similarity >= 80 ? '#facc15' : '#f87171'
+                                                    }}
+                                                />
+                                            </svg>
+                                            <span className={styles.scoreText}>{match.similarity}%</span>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.brandSection}>
+                                        <h4 className={styles.sectionTitle}>Library Brand</h4>
+                                        <BrandCard brand={libBrand} showAllDetails={true} />
+                                    </div>
+                                </div>
+                            </motion.div>
+                        );
+                    })
+                )}
             </div>
         </div>
     );

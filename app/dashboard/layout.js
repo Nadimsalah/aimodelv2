@@ -1,11 +1,12 @@
 
 'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Database, Settings, LogOut, Clock, BarChart, Bell, HelpCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { LayoutDashboard, FileText, Database, Settings, LogOut, Clock, BarChart, Bell, HelpCircle, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from './layout.module.css';
 
 export default function DashboardLayout({ children }) {
@@ -13,6 +14,7 @@ export default function DashboardLayout({ children }) {
     const router = useRouter();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userEmail, setUserEmail] = useState('');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         // Check authentication
@@ -27,6 +29,11 @@ export default function DashboardLayout({ children }) {
         }
     }, [router]);
 
+    // Close mobile menu when route changes
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [pathname]);
+
     const handleLogout = () => {
         sessionStorage.removeItem('authenticated');
         sessionStorage.removeItem('userEmail');
@@ -35,31 +42,16 @@ export default function DashboardLayout({ children }) {
 
     if (!isAuthenticated) {
         return (
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '100vh',
-                background: 'var(--bg-app)'
-            }}>
-                <div style={{
-                    width: '40px',
-                    height: '40px',
-                    border: '3px solid rgba(99, 102, 241, 0.3)',
-                    borderTopColor: '#6366f1',
-                    borderRadius: '50%',
-                    animation: 'spin 0.6s linear infinite'
-                }}></div>
+            <div className={styles.loadingContainer}>
+                <div className={styles.spinner}></div>
             </div>
         );
     }
 
-
     const navItems = [
         { name: 'Overview', href: '/dashboard/overview', icon: LayoutDashboard },
-        { name: 'PDF Scan', href: '/dashboard/pdf-scan', icon: FileText },
-        { name: 'Brand Library', href: '/dashboard/brands', icon: Database },
         { name: 'Scan History', href: '/dashboard/history', icon: Clock },
+        { name: 'Brand Library', href: '/dashboard/brands', icon: Database },
         { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart },
         { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
         { name: 'Settings', href: '/dashboard/settings', icon: Settings },
@@ -68,11 +60,26 @@ export default function DashboardLayout({ children }) {
 
     return (
         <div className={styles.container}>
-            <aside className={styles.sidebar}>
-                <div className={styles.logo}>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 800, lineHeight: 1.2 }}>LEGAFIN SARL</div>
-                    <div style={{ fontSize: '0.65rem', opacity: 0.7, marginTop: '0.2rem' }}>Protégez vos innovations, sécurisez votre avenir</div>
+            {/* Mobile Header */}
+            <header className={styles.mobileHeader}>
+                <div className={styles.logoMobile}>LEGAFIN</div>
+                <button
+                    className={styles.menuToggle}
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                >
+                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+            </header>
+
+            {/* Sidebar / Navigation */}
+            <aside className={`${styles.sidebar} ${isMobileMenuOpen ? styles.open : ''}`}>
+                <div className={styles.sidebarHeader}>
+                    <div className={styles.logo}>
+                        <div className={styles.logoText}>LEGAFIN SARL</div>
+                        <div className={styles.logoTagline}>Innovation Protection</div>
+                    </div>
                 </div>
+
                 <nav className={styles.nav}>
                     {navItems.map(item => {
                         const isActive = pathname.startsWith(item.href);
@@ -82,31 +89,49 @@ export default function DashboardLayout({ children }) {
                                 href={item.href}
                                 className={`${styles.navItem} ${isActive ? styles.active : ''}`}
                             >
-                                <item.icon size={20} />
-                                {item.name}
+                                <item.icon size={20} className={styles.navIcon} />
+                                <span className={styles.navLabel}>{item.name}</span>
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="activeNav"
+                                        className={styles.activeIndicator}
+                                        initial={false}
+                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                    />
+                                )}
                             </Link>
                         );
                     })}
                 </nav>
 
-                {/* User Section with Logout */}
                 <div className={styles.userSection}>
                     <div className={styles.userInfo}>
-                        <div className={styles.userEmail}>{userEmail}</div>
+                        <div className={styles.userAvatar}>
+                            {userEmail.charAt(0).toUpperCase()}
+                        </div>
+                        <div className={styles.userDetails}>
+                            <span className={styles.userEmail}>{userEmail}</span>
+                            <span className={styles.userRole}>Admin</span>
+                        </div>
                     </div>
-                    <motion.button
-                        className={styles.logoutBtn}
-                        onClick={handleLogout}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                    >
+                    <button onClick={handleLogout} className={styles.logoutBtn}>
                         <LogOut size={18} />
-                        Logout
-                    </motion.button>
+                    </button>
                 </div>
             </aside>
+
+            {/* Backdrop for mobile */}
+            {isMobileMenuOpen && (
+                <div
+                    className={styles.backdrop}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
+
             <main className={styles.main}>
-                {children}
+                <div className={styles.contentWrapper}>
+                    {children}
+                </div>
             </main>
         </div>
     );

@@ -6,12 +6,15 @@
 
 .header {
     margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 .title {
     font-size: 2rem;
     font-weight: 700;
-    color: #ededed;
+    color: var(--text-main);
     margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
@@ -19,7 +22,7 @@
 }
 
 .subtitle {
-    color: #a1a1aa;
+    color: var(--text-secondary);
     font-size: 1rem;
 }
 
@@ -30,20 +33,32 @@
 }
 
 .section {
-    background: rgba(23, 23, 23, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
     padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.section:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
 }
 
 .sectionTitle {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #ededed;
+    color: var(--text-main);
     margin-bottom: 1.5rem;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+}
+
+.sectionTitle svg {
+    color: var(--primary);
 }
 
 .settingItem {
@@ -56,13 +71,13 @@
 
 .label {
     display: block;
-    color: #ededed;
+    color: var(--text-main);
     font-weight: 500;
     margin-bottom: 0.5rem;
 }
 
 .description {
-    color: #a1a1aa;
+    color: var(--text-secondary);
     font-size: 0.875rem;
     margin-top: 0.25rem;
 }
@@ -70,23 +85,23 @@
 .input {
     width: 100%;
     padding: 0.875rem 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    color: #ededed;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--text-main);
     font-size: 0.95rem;
     transition: all 0.2s ease;
 }
 
 .input:focus {
     outline: none;
-    background: rgba(255, 255, 255, 0.08);
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    background: var(--bg-surface);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
 }
 
 .hint {
-    color: #71717a;
+    color: var(--text-tertiary);
     font-size: 0.8rem;
     margin-top: 0.5rem;
 }
@@ -119,7 +134,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--border-subtle);
     transition: 0.3s;
     border-radius: 28px;
 }
@@ -134,10 +149,11 @@
     background-color: white;
     transition: 0.3s;
     border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .toggle input:checked+.slider {
-    background-color: #6366f1;
+    background-color: var(--primary);
 }
 
 .toggle input:checked+.slider:before {
@@ -146,18 +162,18 @@
 
 .dangerBtn {
     padding: 0.75rem 1.5rem;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 10px;
-    color: #ef4444;
+    background: var(--bg-surface);
+    border: 1px solid var(--error-bg);
+    border-radius: var(--radius-md);
+    color: var(--error);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .dangerBtn:hover {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.5);
+    background: var(--error-bg);
+    border-color: var(--error);
 }
 
 .saveSection {
@@ -170,22 +186,30 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.875rem 2rem;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    background: var(--primary);
     color: white;
     border: none;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
 }
 
 .saveBtn:hover {
-    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    background: var(--primary-hover);
 }
 
 @media (max-width: 768px) {
     .container {
-        padding: 1.5rem;
+        padding: 16px;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 0.5rem;
     }
 
     .title {
@@ -199,5 +223,9 @@
     .saveBtn {
         width: 100%;
         justify-content: center;
+    }
+
+    .toggleRow {
+        gap: 0.5rem;
     }
 }

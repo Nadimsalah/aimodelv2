@@ -1,0 +1,169 @@
+.card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.card:hover {
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.compact {
+    padding: 1rem;
+}
+
+.header {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.logoContainer {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.compact .logoContainer {
+    width: 60px;
+    height: 60px;
+}
+
+.logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 0.5rem;
+}
+
+.placeholderLogo {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+}
+
+.nameSection {
+    flex: 1;
+    min-width: 0;
+}
+
+.brandName {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 0.5rem 0;
+    word-wrap: break-word;
+    line-height: 1.2;
+}
+
+.compact .brandName {
+    font-size: 1.1rem;
+}
+
+.appNumber {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    color: var(--primary);
+    background: var(--primary-light);
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.detailRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    min-width: 100px;
+}
+
+.label svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+}
+
+.value {
+    font-size: 0.9rem;
+    color: var(--text-main);
+    text-align: right;
+    flex: 1;
+    word-wrap: break-word;
+    font-weight: 500;
+}
+
+.description {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.description .label {
+    margin-bottom: 0.5rem;
+}
+
+.descText {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .detailRow {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .value {
+        text-align: left;
+    }
+
+    .label {
+        min-width: auto;
+    }
+}

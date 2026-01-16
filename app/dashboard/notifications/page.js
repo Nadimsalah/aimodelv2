@@ -47,12 +47,12 @@ export default function NotificationsPage() {
     const getColor = (type) => {
         switch (type) {
             case 'success':
-                return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', border: 'rgba(16, 185, 129, 0.3)' };
+                return { bg: 'var(--success-bg)', color: 'var(--success)', border: 'transparent' };
             case 'warning':
-                return { bg: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', border: 'rgba(245, 158, 11, 0.3)' };
+                return { bg: 'var(--warning-bg)', color: 'var(--warning)', border: 'transparent' };
             case 'info':
             default:
-                return { bg: 'rgba(99, 102, 241, 0.1)', color: '#6366f1', border: 'rgba(99, 102, 241, 0.3)' };
+                return { bg: 'var(--bg-subtle)', color: 'var(--primary)', border: 'transparent' };
         }
     };
 

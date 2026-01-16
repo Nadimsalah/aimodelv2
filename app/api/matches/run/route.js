@@ -42,6 +42,7 @@ export async function POST(req) {
             const rows = matches.map(m => ({
                 job_id: jobId,
                 brand_id: m.my_brand_id,
+                pdf_brand_id: m.pdf_brand_id,
                 my_brand: m.my_brand_name,
                 detected_brand: m.detected_brand_name,
                 similarity: m.similarity,

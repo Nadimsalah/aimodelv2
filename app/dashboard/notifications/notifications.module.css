@@ -14,7 +14,7 @@
 .title {
     font-size: 2rem;
     font-weight: 700;
-    color: #ededed;
+    color: var(--text-main);
     margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
@@ -22,7 +22,7 @@
 }
 
 .subtitle {
-    color: #a1a1aa;
+    color: var(--text-secondary);
     font-size: 1rem;
 }
 
@@ -33,7 +33,7 @@
     min-width: 24px;
     height: 24px;
     padding: 0 0.5rem;
-    background: #ef4444;
+    background: var(--error);
     color: white;
     border-radius: 12px;
     font-size: 0.75rem;
@@ -41,19 +41,21 @@
 }
 
 .markAllBtn {
-    padding: 0.75rem 1.25rem;
-    background: rgba(99, 102, 241, 0.1);
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    border-radius: 10px;
-    color: #6366f1;
+    padding: 0.5rem 1rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--primary);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-sm);
 }
 
 .markAllBtn:hover {
-    background: rgba(99, 102, 241, 0.2);
-    border-color: rgba(99, 102, 241, 0.5);
+    background: var(--primary-light);
+    border-color: var(--primary);
 }
 
 .notificationsList {
@@ -65,27 +67,32 @@
 .notificationItem {
     display: flex;
     align-items: flex-start;
-    gap: 1rem;
+    gap: 1.25rem;
     padding: 1.25rem;
-    background: rgba(23, 23, 23, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
     transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
 }
 
 .notificationItem:hover {
-    background: rgba(23, 23, 23, 0.95);
-    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-light);
 }
 
 .notificationItem.read {
-    opacity: 0.6;
+    background: var(--bg-app);
+    opacity: 0.8;
+    box-shadow: none;
+    border-color: transparent;
 }
 
 .notificationIcon {
     width: 40px;
     height: 40px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -102,13 +109,13 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 1rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .notificationTitle {
     font-size: 1rem;
     font-weight: 600;
-    color: #ededed;
+    color: var(--text-main);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -117,19 +124,20 @@
 .unreadDot {
     width: 8px;
     height: 8px;
-    background: #6366f1;
+    background: var(--primary);
     border-radius: 50%;
 }
 
 .notificationTime {
-    color: #a1a1aa;
-    font-size: 0.875rem;
+    color: var(--text-tertiary);
+    font-size: 0.75rem;
     white-space: nowrap;
 }
 
 .notificationMessage {
-    color: #a1a1aa;
+    color: var(--text-secondary);
     line-height: 1.5;
+    font-size: 0.95rem;
 }
 
 .notificationActions {
@@ -144,17 +152,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: #a1a1aa;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-tertiary);
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .actionBtn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ededed;
+    background: var(--bg-subtle);
+    color: var(--primary);
+    border-color: var(--border-subtle);
 }
 
 .emptyState {
@@ -163,18 +172,21 @@
     align-items: center;
     justify-content: center;
     padding: 4rem 2rem;
-    color: #a1a1aa;
+    color: var(--text-tertiary);
     text-align: center;
+    background: var(--bg-subtle);
+    border-radius: var(--radius-lg);
 }
 
 .emptyState p {
     margin-top: 1rem;
     font-style: italic;
+    font-weight: 500;
 }
 
 @media (max-width: 768px) {
     .container {
-        padding: 1.5rem;
+        padding: 16px;
     }
 
     .header {
@@ -188,6 +200,12 @@
 
     .markAllBtn {
         width: 100%;
+        text-align: center;
+    }
+
+    .notificationItem {
+        padding: 1rem;
+        gap: 1rem;
     }
 
     .notificationHeader {

@@ -1,46 +1,64 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileSpreadsheet, Trash2, Search, RefreshCw, Download, Plus, X, List } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { Upload, FileSpreadsheet, Trash2, Search, Database, Download, Eye, Clock } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 import styles from './brands.module.css';
 
 export const dynamic = 'force-dynamic';
 
 export default function BrandsPage() {
-    const [brands, setBrands] = useState([]);
+    const [imports, setImports] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [importing, setImporting] = useState(false);
-    const [uploadStatus, setUploadStatus] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [showBulkModal, setShowBulkModal] = useState(false);
-    const [newBrandName, setNewBrandName] = useState('');
-    const [bulkBrands, setBulkBrands] = useState('');
-    const [deletingId, setDeletingId] = useState(null);
+    const intervalRef = useRef(null);
 
-    const fetchBrands = async () => {
-        setLoading(true);
-        const { data, error } = await supabase
-            .from('brands')
-            .select('*')
-            .order('created_at', { ascending: false });
+    const fetchImports = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('brand_imports')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-        if (error) console.error("Fetch Brands Error:", error.message || error);
-        else setBrands(data || []);
+            if (error) {
+                // Table might not exist yet, that's okay
+                console.log("Brand imports table not found - will be created on first upload");
+                setImports([]);
+            } else {
+                setImports(data || []);
+            }
+        } catch (err) {
+            console.log("Error fetching imports:", err);
+            setImports([]);
+        }
         setLoading(false);
     };
 
     useEffect(() => {
-        fetchBrands();
+        fetchImports();
+
+        // Auto-refresh every 3 seconds
+        intervalRef.current = setInterval(() => {
+            fetchImports();
+        }, 3000);
+
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
     }, []);
 
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        setImporting(true);
-        setUploadStatus(null);
+        setUploading(true);
+        setUploadProgress({ status: 'uploading', message: 'Uploading Excel file...' });
+
         const formData = new FormData();
         formData.append('file', file);
 
@@ -49,321 +67,253 @@ export default function BrandsPage() {
                 method: 'POST',
                 body: formData
             });
+
             const data = await res.json();
+
             if (res.ok) {
-                setUploadStatus({ type: 'success', message: data.message });
-                fetchBrands();
+                setUploadProgress({
+                    status: 'success',
+                    message: `✓ Successfully imported ${data.imported || 0} brands!`
+                });
+                fetchImports();
+
+                setTimeout(() => setUploadProgress(null), 3000);
             } else {
-                setUploadStatus({ type: 'error', message: data.error });
+                setUploadProgress({
+                    status: 'error',
+                    message: `✗ ${data.error || 'Import failed'}`
+                });
             }
         } catch (err) {
-            setUploadStatus({ type: 'error', message: err.message });
+            setUploadProgress({
+                status: 'error',
+                message: `✗ ${err.message}`
+            });
         } finally {
-            setImporting(false);
+            setUploading(false);
+            e.target.value = '';
         }
     };
 
+    const handleDeleteImport = async (importId) => {
+        if (!confirm('Delete this import? This will also delete all brands from this import.')) return;
+
+        const { error } = await supabase
+            .from('brand_imports')
+            .delete()
+            .eq('id', importId);
+
+        if (!error) fetchImports();
+    };
+
     const handleDownloadSample = () => {
-        const csvContent = `Brand Name
-Nike
-Adidas
-Puma
-Reebok
-Apple
-Samsung`;
+        const csvContent = `Brand Name,Logo,Registration Number,Nice Class,Status,Filing Date,Expiration Date
+Nike,nike_logo.png,123456,25,Active,2020-01-15,2030-01-15
+Adidas,adidas_logo.png,789012,25,Active,2019-05-20,2029-05-20
+Puma,puma_logo.png,345678,25,Active,2021-03-10,2031-03-10`;
 
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'brand-sample.csv';
+        a.download = 'brand-library-sample.csv';
         a.click();
     };
 
-    const handleAddSingleBrand = async () => {
-        if (!newBrandName.trim()) return;
-
-        const { error } = await supabase
-            .from('brands')
-            .insert([{
-                name: newBrandName.trim(),
-                normalized_name: newBrandName.trim().toLowerCase()
-            }]);
-
-        if (error) {
-            setUploadStatus({ type: 'error', message: error.message });
-        } else {
-            setUploadStatus({ type: 'success', message: 'Brand added successfully!' });
-            setNewBrandName('');
-            setShowAddModal(false);
-            fetchBrands();
+    const getStatusColor = (status) => {
+        switch (status?.toLowerCase()) {
+            case 'completed':
+                return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981' };
+            case 'processing':
+                return { bg: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' };
+            case 'failed':
+                return { bg: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' };
+            default:
+                return { bg: 'rgba(161, 161, 170, 0.1)', color: '#a1a1aa' };
         }
     };
 
-    const handleBulkAdd = async () => {
-        const brandNames = bulkBrands
-            .split('\n')
-            .map(name => name.trim())
-            .filter(name => name.length > 0);
-
-        if (brandNames.length === 0) return;
-
-        const brandsToInsert = brandNames.map(name => ({
-            name: name,
-            normalized_name: name.toLowerCase()
-        }));
-
-        const { error } = await supabase
-            .from('brands')
-            .insert(brandsToInsert);
-
-        if (error) {
-            setUploadStatus({ type: 'error', message: error.message });
-        } else {
-            setUploadStatus({ type: 'success', message: `${brandNames.length} brands added successfully!` });
-            setBulkBrands('');
-            setShowBulkModal(false);
-            fetchBrands();
-        }
-    };
-
-    const handleDeleteBrand = async (id) => {
-        setDeletingId(id);
-        const { error } = await supabase
-            .from('brands')
-            .delete()
-            .eq('id', id);
-
-        if (error) {
-            setUploadStatus({ type: 'error', message: error.message });
-        } else {
-            setUploadStatus({ type: 'success', message: 'Brand deleted successfully!' });
-            fetchBrands();
-        }
-        setDeletingId(null);
-    };
-
-    const filteredBrands = brands.filter(b =>
-        b.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredImports = imports.filter(imp =>
+        imp.filename?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        imp.id?.toString().includes(searchTerm)
     );
 
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <h1 className={styles.title}>Brand Library</h1>
-                <p className={styles.subtitle}>Manage your known brands database</p>
+                <div className={styles.titleRow}>
+                    <Database size={32} className={styles.icon} />
+                    <div>
+                        <h1 className={styles.title}>Brand Library</h1>
+                        <p className={styles.subtitle}>Upload Excel files to build your trademark database</p>
+                    </div>
+                </div>
             </header>
 
-            {/* Management Options */}
-            <div className={styles.optionsGrid}>
-                {/* Upload Excel */}
-                <div className={styles.optionCard}>
-                    <FileSpreadsheet size={28} className={styles.optionIcon} />
-                    <h3>Import from Excel</h3>
-                    <p>Upload .xlsx or .xls file</p>
+            {/* Upload Section */}
+            <div className={styles.uploadCard}>
+                <div className={styles.uploadArea}>
+                    <FileSpreadsheet size={48} className={styles.uploadIcon} />
+                    <h3>Upload Excel File</h3>
+                    <p>Drag and drop your Excel file or click to browse</p>
+                    <p className={styles.formats}>Supported: .xlsx, .xls, .csv</p>
+
                     <input
                         type="file"
-                        accept=".xlsx, .xls"
-                        id="xls-upload"
+                        accept=".xlsx, .xls, .csv"
+                        id="excel-upload"
                         hidden
                         onChange={handleFileUpload}
-                        disabled={importing}
+                        disabled={uploading}
                     />
-                    <label htmlFor="xls-upload" className={styles.optionBtn}>
-                        {importing ? <RefreshCw className={styles.spin} size={16} /> : <Upload size={16} />}
-                        {importing ? 'Importing...' : 'Upload'}
+                    <label htmlFor="excel-upload" className={styles.uploadBtn}>
+                        <Upload size={20} />
+                        {uploading ? 'Uploading...' : 'Choose File'}
                     </label>
-                </div>
 
-                {/* Download Sample */}
-                <div className={styles.optionCard}>
-                    <Download size={28} className={styles.optionIcon} />
-                    <h3>Download Sample</h3>
-                    <p>Get example CSV template</p>
-                    <button className={styles.optionBtn} onClick={handleDownloadSample}>
+                    <button onClick={handleDownloadSample} className={styles.sampleBtn}>
                         <Download size={16} />
-                        Download
+                        Download Sample Template
                     </button>
                 </div>
 
-                {/* Add Single Brand */}
-                <div className={styles.optionCard}>
-                    <Plus size={28} className={styles.optionIcon} />
-                    <h3>Add Single Brand</h3>
-                    <p>Add one brand manually</p>
-                    <button className={styles.optionBtn} onClick={() => setShowAddModal(true)}>
-                        <Plus size={16} />
-                        Add Brand
-                    </button>
-                </div>
+                {uploadProgress && (
+                    <motion.div
+                        className={`${styles.uploadStatus} ${styles[uploadProgress.status]}`}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        {uploadProgress.message}
+                    </motion.div>
+                )}
+            </div>
 
-                {/* Bulk Paste */}
-                <div className={styles.optionCard}>
-                    <List size={28} className={styles.optionIcon} />
-                    <h3>Paste Brand List</h3>
-                    <p>Add multiple brands at once</p>
-                    <button className={styles.optionBtn} onClick={() => setShowBulkModal(true)}>
-                        <List size={16} />
-                        Paste List
-                    </button>
+            {/* Search Bar */}
+            <div className={styles.searchSection}>
+                <div className={styles.searchBox}>
+                    <Search size={20} />
+                    <input
+                        type="text"
+                        placeholder="Search by filename or ID..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className={styles.searchInput}
+                    />
+                </div>
+                <div className={styles.stats}>
+                    <span className={styles.statBadge}>
+                        Total Imports: <strong>{imports.length}</strong>
+                    </span>
                 </div>
             </div>
 
-            {uploadStatus && (
-                <motion.div
-                    className={`${styles.status} ${styles[uploadStatus.type]}`}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                >
-                    {uploadStatus.message}
-                </motion.div>
-            )}
-
-            {/* Brands Grid Section */}
-            <div className={styles.brandsCard}>
-                <div className={styles.brandsHeader}>
-                    <h2>My Brands ({brands.length})</h2>
-                    <div className={styles.searchBox}>
-                        <Search size={18} />
-                        <input
-                            type="text"
-                            placeholder="Search brands..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                </div>
+            {/* Import History */}
+            <div className={styles.historyCard}>
+                <h2>
+                    <Clock size={24} />
+                    Import History
+                </h2>
 
                 {loading ? (
-                    <p className={styles.emptyState}>Loading brands...</p>
-                ) : filteredBrands.length === 0 ? (
-                    <p className={styles.emptyState}>No brands found.</p>
+                    <p className={styles.emptyState}>Loading import history...</p>
+                ) : filteredImports.length === 0 ? (
+                    <div className={styles.emptyState}>
+                        <FileSpreadsheet size={48} />
+                        <p>{searchTerm ? 'No imports match your search' : 'No imports yet. Upload an Excel file to get started!'}</p>
+                    </div>
                 ) : (
-                    <div className={styles.brandsGrid}>
-                        {filteredBrands.map((brand, index) => (
-                            <motion.div
-                                key={brand.id}
-                                className={styles.brandBox}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: index * 0.02, duration: 0.3 }}
-                                whileHover={{ scale: 1.05, y: -4 }}
-                            >
-                                <div className={styles.brandName}>{brand.name}</div>
-                                <button
-                                    className={styles.deleteBtn}
-                                    onClick={() => handleDeleteBrand(brand.id)}
-                                    disabled={deletingId === brand.id}
+                    <div className={styles.importsList}>
+                        {filteredImports.map((imp, index) => {
+                            const statusStyle = getStatusColor(imp.status);
+
+                            return (
+                                <motion.div
+                                    key={imp.id}
+                                    className={styles.importItem}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.05 }}
                                 >
-                                    {deletingId === brand.id ? (
-                                        <RefreshCw size={14} className={styles.spin} />
-                                    ) : (
-                                        <Trash2 size={14} />
-                                    )}
-                                </button>
-                            </motion.div>
-                        ))}
+                                    <div className={styles.importIcon}>
+                                        <FileSpreadsheet size={24} />
+                                    </div>
+
+                                    <div className={styles.importContent}>
+                                        <h3 className={styles.importFilename}>
+                                            {imp.filename || 'Untitled Import'}
+                                        </h3>
+                                        <div className={styles.importMeta}>
+                                            <span className={styles.importId}>ID: {imp.id}</span>
+                                            <span className={styles.importDate}>
+                                                {new Date(imp.created_at).toLocaleDateString()} at {new Date(imp.created_at).toLocaleTimeString()}
+                                            </span>
+                                            <span className={styles.importCount}>
+                                                {imp.brands_count || 0} brands imported
+                                            </span>
+                                        </div>
+
+                                        {/* Data Summary */}
+                                        {imp.data_summary && (
+                                            <div className={styles.dataSummary}>
+                                                {imp.data_summary.registration_numbers && (
+                                                    <span className={styles.dataItem}>
+                                                        📋 Reg #: {imp.data_summary.registration_numbers}
+                                                    </span>
+                                                )}
+                                                {imp.data_summary.nice_classes && (
+                                                    <span className={styles.dataItem}>
+                                                        🏷️ Classes: {imp.data_summary.nice_classes}
+                                                    </span>
+                                                )}
+                                                {imp.data_summary.status && (
+                                                    <span className={styles.dataItem}>
+                                                        ✓ Status: {imp.data_summary.status}
+                                                    </span>
+                                                )}
+                                                {imp.data_summary.date_range && (
+                                                    <span className={styles.dataItem}>
+                                                        📅 {imp.data_summary.date_range}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className={styles.importStatus}>
+                                        <span
+                                            className={styles.statusBadge}
+                                            style={{
+                                                backgroundColor: statusStyle.bg,
+                                                color: statusStyle.color
+                                            }}
+                                        >
+                                            {imp.status || 'completed'}
+                                        </span>
+                                    </div>
+
+                                    <div className={styles.importActions}>
+                                        <Link
+                                            href={`/dashboard/brands/${imp.id}`}
+                                            className={`${styles.actionBtn} ${styles.viewBtn}`}
+                                            title="View Brands"
+                                        >
+                                            <Eye size={16} />
+                                            View
+                                        </Link>
+                                        <button
+                                            onClick={() => handleDeleteImport(imp.id)}
+                                            className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                                            title="Delete Import"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 )}
             </div>
-
-            {/* Add Single Brand Modal */}
-            <AnimatePresence>
-                {showAddModal && (
-                    <motion.div
-                        className={styles.modalOverlay}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setShowAddModal(false)}
-                    >
-                        <motion.div
-                            className={styles.modal}
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className={styles.modalHeader}>
-                                <h3>Add Single Brand</h3>
-                                <button onClick={() => setShowAddModal(false)}>
-                                    <X size={20} />
-                                </button>
-                            </div>
-                            <div className={styles.modalBody}>
-                                <label>Brand Name</label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter brand name..."
-                                    value={newBrandName}
-                                    onChange={(e) => setNewBrandName(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleAddSingleBrand()}
-                                    autoFocus
-                                />
-                            </div>
-                            <div className={styles.modalFooter}>
-                                <button className={styles.cancelBtn} onClick={() => setShowAddModal(false)}>
-                                    Cancel
-                                </button>
-                                <button className={styles.addBtn} onClick={handleAddSingleBrand}>
-                                    <Plus size={16} />
-                                    Add Brand
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Bulk Add Modal */}
-            <AnimatePresence>
-                {showBulkModal && (
-                    <motion.div
-                        className={styles.modalOverlay}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setShowBulkModal(false)}
-                    >
-                        <motion.div
-                            className={styles.modal}
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className={styles.modalHeader}>
-                                <h3>Paste Brand List</h3>
-                                <button onClick={() => setShowBulkModal(false)}>
-                                    <X size={20} />
-                                </button>
-                            </div>
-                            <div className={styles.modalBody}>
-                                <label>Brand Names (one per line)</label>
-                                <textarea
-                                    placeholder="Nike&#10;Adidas&#10;Puma&#10;..."
-                                    value={bulkBrands}
-                                    onChange={(e) => setBulkBrands(e.target.value)}
-                                    rows={10}
-                                    autoFocus
-                                />
-                                <p className={styles.hint}>
-                                    {bulkBrands.split('\n').filter(n => n.trim()).length} brands to add
-                                </p>
-                            </div>
-                            <div className={styles.modalFooter}>
-                                <button className={styles.cancelBtn} onClick={() => setShowBulkModal(false)}>
-                                    Cancel
-                                </button>
-                                <button className={styles.addBtn} onClick={handleBulkAdd}>
-                                    <Plus size={16} />
-                                    Add All
-                                </button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </div>
     );
 }
