@@ -118,14 +118,33 @@ export default function HistoryPage() {
         setUploading(true);
         setUploadProgress({ status: 'uploading', message: 'Uploading PDF...' });
 
-        const formData = new FormData();
-        formData.append('file', file);
-
         try {
-            // Create scan job
+            // 1. Upload to Supabase Storage directly (Client-side)
+            // This bypasses Vercel's 4.5MB body limit
+            const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+            const filename = `${Date.now()}_${sanitizedName}`;
+
+            const { data: storageData, error: storageError } = await supabase
+                .storage
+                .from('scans')
+                .upload(filename, file);
+
+            if (storageError) {
+                console.error('Storage Error:', storageError);
+                throw new Error(`Storage upload failed: ${storageError.message}`);
+            }
+
+            // 2. Create Job in DB via API
             const createRes = await fetch('/api/scans/create', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filename: file.name,
+                    storage_path: storageData.path,
+                    file_size: file.size
+                })
             });
 
             const responseText = await createRes.text();
@@ -136,12 +155,11 @@ export default function HistoryPage() {
                 createData = JSON.parse(responseText);
             } catch (e) {
                 console.error('JSON Parse Error:', e);
-                console.error('Raw Response:', responseText);
                 throw new Error(`Server returned non-JSON response: ${responseText.substring(0, 100)}...`);
             }
 
             if (!createRes.ok) {
-                throw new Error(createData.error || 'Upload failed');
+                throw new Error(createData.error || 'Job creation failed');
             }
 
             setUploadProgress({

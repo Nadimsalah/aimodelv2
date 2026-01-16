@@ -1,5 +1,6 @@
 
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
+import { PDFDocument } from 'pdf-lib';
 import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
@@ -90,24 +91,38 @@ export class BrandExtractorService {
         });
     }
 
+    /**
+     * Checks if necessary system dependencies are available
+     */
+    async checkDependencies(): Promise<void> {
+        try {
+            await execAsync('pdftoppm -v');
+        } catch (error) {
+            throw new Error("System dependency 'poppler-utils' (pdftoppm) is missing. Please install it to process PDFs.");
+        }
+    }
 
     /**
-     * Gets the total number of pages in the PDF using pdfinfo
+     * Gets the total number of pages in the PDF using pdf-lib (Pure JS)
      */
     async getPageCount(pdfPath: string): Promise<number> {
         try {
-            // pdfinfo input
-            const { stdout } = await execAsync(`pdfinfo "${pdfPath}"`);
-            // Output format: "Pages: 10"
-            const match = stdout.match(/Pages:\s+(\d+)/);
-            if (match && match[1]) {
-                return parseInt(match[1], 10);
-            }
-            return 0;
+            const pdfBuffer = fs.readFileSync(pdfPath);
+            // Load only the needed parts to get page count if possible, 
+            // but load() is generally fast enough for this purpose
+            const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+            return pdfDoc.getPageCount();
         } catch (error: any) {
-            console.error("PDF Info Error:", error);
-            // Fallback to 1 if we can't determine, or throw
-            return 1;
+            console.error("PDF Page Count Error:", error);
+            // If pdf-lib fails, try fallback to pdfinfo just in case (optional, but good for legacy)
+            try {
+                const { stdout } = await execAsync(`pdfinfo "${pdfPath}"`);
+                const match = stdout.match(/Pages:\s+(\d+)/);
+                if (match && match[1]) return parseInt(match[1], 10);
+            } catch (e) {
+                // Ignore fallback error
+            }
+            return 1; // Default fallback
         }
     }
 

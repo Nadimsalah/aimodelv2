@@ -16,44 +16,22 @@ const supabase = createClient(
 
 export async function POST(req) {
     try {
-        const formData = await req.formData();
-        const file = formData.get('file');
+        const body = await req.json();
+        const { filename, storage_path, file_size } = body;
 
-        if (!file) {
-            return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+        if (!filename || !storage_path) {
+            return NextResponse.json({ error: 'Missing required fields: filename or storage_path' }, { status: 400 });
         }
 
-        const filename = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        console.log('Registering job for file:', filename);
 
-        // 1. Upload to Supabase Storage
-        console.log('Attempting to upload file:', filename);
-
-        const { data: storageData, error: storageError } = await supabase
-            .storage
-            .from('scans')
-            .upload(filename, file);
-
-        if (storageError) {
-            console.error('Storage Upload Error:', storageError);
-
-            // Check if bucket doesn't exist
-            if (storageError.message?.includes('Bucket not found') || storageError.message?.includes('bucket')) {
-                return NextResponse.json({
-                    error: 'Storage bucket "scans" does not exist. Please create it in Supabase Dashboard → Storage → Create bucket named "scans"'
-                }, { status: 500 });
-            }
-
-            return NextResponse.json({ error: 'Failed to upload PDF: ' + storageError.message }, { status: 500 });
-        }
-
-        console.log('File uploaded successfully:', storageData.path);
-
-        // 2. Create Job in DB
+        // Create Job in DB
         const { data: jobData, error: dbError } = await supabase
             .from('scan_jobs')
             .insert({
-                filename: file.name,
-                storage_path: storageData.path,
+                filename: filename,
+                storage_path: storage_path,
+                // file_size: file_size // Add to schema if column exists, for now omit or add if schema supports
                 status: 'queued'
             })
             .select()
